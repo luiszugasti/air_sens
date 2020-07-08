@@ -18,7 +18,9 @@ def get_test_payload():
                       "mq2={}".format(mq2) + \
                       "&mq4={}".format(mq4) + \
                       "&mq5={}".format(mq5) + \
-                      "&mq135={}".format(mq135)
+                      "&mq135={}".format(mq135) + \
+                      "\n"
+    print(default_payload)
     return default_payload
 
 

@@ -1,0 +1,59 @@
+import time
+import serial
+
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
+
+import os
+import re
+
+
+# provision the serial data
+def get_payload(serial_port, baud=9600) -> str:
+    ser = serial.Serial(serial_port, baud, timeout=2)
+    time.sleep(5)
+    # send the control character for data transmission
+    ser.write(b'H')
+    time.sleep(5)  # wait for asynchronicity of message
+    # check the serial buffer for enclosed message
+    message = ser.read(ser.inWaiting()).decode("utf-8").strip("\n")
+    # obtain the data by parsing it
+    return message
+
+
+def parse_payload(payload: str) -> dict:
+    # builds a dict with key: value pairs for all the keys in the get type request.
+    exp = re.compile('[?]\w*|[=]\d*|[&]\w*')
+    hits = exp.findall(payload)
+    try:
+        ret = {hits[0].replace("?", ""): int(hits[1].replace("=", ""))}
+        for i in range(2, len(hits) - 1, 2):
+            ret[hits[i].replace("&", "")] = int(hits[i + 1].replace("=", ""))
+    except ValueError:
+        # usually can take place if we try to parse a non-integer as an integer.
+        # if we send an empty payload, then entries won't be logged.
+        # However, this means we don't take an input. Logging?
+        return {'mq2': " ",
+                'mq4': " ",
+                'mq5': " ",
+                'mq135': " "}
+    return ret
+
+
+def get_values(port="/dev/ttyUSB0"):
+    # table, then payload entries
+    pay = get_payload(port)
+    hit = parse_payload(pay)
+    val_string = "airtestt,site=kitchen mq2={},mq4={},mq5={},mq135={}" \
+        .format(hit['mq2'], hit['mq4'], hit['mq5'], hit['mq135'])
+    return val_string
+
+
+# topic is a reference to a database. The payload contains what table we wish to use.
+def pub(client_id, topic="sensors", payload="temp,site=room1 value=123456", qos=0, retain=False,
+        hostname=str(os.environ.get('BROKERDOMAIN', "192.168.0.18")),
+        port=os.environ.get('BROKERPORT', 1883), keepalive=60, will=None, auth=None, tls=None, protocol=mqtt.MQTTv311,
+        transport="tcp"):
+    publish.single(topic, payload, qos, retain, hostname,
+                   port, client_id, keepalive, will, auth, tls, protocol, transport)
+    print("Sent following payload: \n{}".format(payload))
