@@ -40,7 +40,7 @@ def parse_payload(payload: str) -> dict:
     return ret
 
 
-def get_values(port="/dev/ttyUSB0"):
+def get_values(port):
     # table, then payload entries
     pay = get_payload(port)
     hit = parse_payload(pay)

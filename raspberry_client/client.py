@@ -1,18 +1,12 @@
 from importlib import import_module
 import os
 import time
-
-if os.environ.get('SENSOR'):
-    Sensor = import_module(os.environ['SENSOR'] + 'sensor').Sensor
-else:
-    import arduinosensor
-
-
+import arduinosensor
 def main():
     # open defined client
     start_time = time.time()
     while True:
-        reading = arduinosensor.get_values()
+        reading = arduinosensor.get_values(os.environ.get('PORT', "/dev/ttyUSB0"))
         arduinosensor.pub("python_client", payload=reading)
         time.sleep(10.0 - ((time.time() - start_time) % 10.0))
 
