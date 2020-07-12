@@ -3,7 +3,7 @@
 This Repo contains code for the Arduino IOT Thing as well as the Raspberry
 client. 
 
-Please check out the [instructable]() for further instructions.
+Please check out the [instructable](https://www.instructables.com/id/Track-Air-Quality-Using-Grafana-and-Raspberry-Pi/) for further instructions.
 
 ## Raspberry Client
 
